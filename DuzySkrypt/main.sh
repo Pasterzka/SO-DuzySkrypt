@@ -16,7 +16,7 @@
 API_KEY="8fc87fbd34eb03efd56fe9601d616583"
 LAT="54.3520" # Szerokość geograficzna Gdańska
 LON="18.6466" # Długość geograficzna Gdańska
-WALLPAPER_DIR="$HOME/DuzySkrypt/wallpapers"
+WALLPAPER_DIR="$HOME/DuzySkrypt/tapety"
 EXCLUDE="minutely,hourly,daily,alerts" # Części odpowiedzi do wykluczenia
 
 
