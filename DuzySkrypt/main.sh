@@ -4,6 +4,7 @@
 # Last Modified By : Jakub Pastuszka ( jaku6p@gmail.com )
 # Last Modified On : 30,05,2024 
 # Version          : 1.0
+v="1.0"
 #
 # Description      : Projekt polega na zmianie tapety urządzenia na podstawie aktualnej pogody
 # Opis
@@ -14,45 +15,124 @@
 
 # Ustawienia użytkownika
 API_KEY="8fc87fbd34eb03efd56fe9601d616583"
-LAT="54.3520" # Szerokość geograficzna Gdańska
-LON="18.6466" # Długość geograficzna Gdańska
-WALLPAPER_DIR="$HOME/DuzySkrypt/tapety"
-EXCLUDE="minutely,hourly,daily,alerts" # Części odpowiedzi do wykluczenia
+WALLPAPER_DIR="$HOME/tapety"
+
+pomoc(){
+    echo "W celu uzyskania pomocy wpisz man DuzySkrypt"
+}
+
+wersja(){
+    echo "Aktualna wersja aplikacji:${v}"
+}
+
+zmienTapete(){
+    miasto
+    # Pobierz dane pogodowe z OpenWeatherMap API
+    WEATHER_DATA=$(curl -s "https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${API_KEY}")
+
+    # Pobierz opis pogody z odpowiedzi API
+    MAIN=$(echo "$WEATHER_DATA" | jq -r '.current.weather[0].main')
+
+    # Ustaw odpowiednią tapetę na podstawie głównego stanu pogody
+    case "$MAIN" in
+        "Clear") 
+            WALLPAPER="$WALLPAPER_DIR/sunny.jpg";;
+        "Clouds") 
+            WALLPAPER="$WALLPAPER_DIR/cloudy.jpg";;
+        "Rain" | "Drizzle") 
+            WALLPAPER="$WALLPAPER_DIR/rainy.jpg";;
+        "Thunderstorm") 
+            WALLPAPER="$WALLPAPER_DIR/thunderstorm.jpg";;
+        "Snow") 
+            WALLPAPER="$WALLPAPER_DIR/snowy.jpg";;
+        "Mist" | "Smoke" | "Haze" | "Dust" | "Fog" | "Sand" | "Ash" | "Squall" | "Tornado")
+            WALLPAPER="$WALLPAPER_DIR/misty.jpg";;
+        *) 
+            WALLPAPER="$WALLPAPER_DIR/default.jpg";;
+    esac
+
+    gsettings set org.gnome.desktop.background picture-uri "file://$WALLPAPER"
+
+    echo "Zmieniono tapete na $WALLPAPER na podstawie pogody w $MIASTO"
+}
+
+cisnienie(){
+    miasto;
+    # Pobierz dane pogodowe z OpenWeatherMap API
+    WEATHER_DATA=$(curl -s "https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${API_KEY}")
+
+    # Pobierz opis pogody z odpowiedzi API
+    MAIN=$(echo "$WEATHER_DATA" | jq -r '.current.pressure')
+    echo "Cisnienie wynosi $MAIN hPa w $MIASTO"
+}
+
+miasto(){
+    if [ "$MIASTO" == "GDANSK" ]; then
+        LAT="54.3520" # Szerokość geograficzna Gdańska
+        LON="18.6466" # Długość geograficzna Gdańska
+    elif [ "$MIASTO" == "SOPOT" ]; then
+        LAT="54.4419"
+        LON="18.5601"
+    elif [ "$MIASTO" == "WARSZAWA" ]; then
+        LAT="52.2297"
+        LON="21.0122"
+    else
+        MIASTO="GDANSK"
+        LAT="54.3520" # Szerokość geograficzna Gdańska
+        LON="18.6466" # Długość geograficzna Gdańska
+    fi
 
 
-# Pobierz dane pogodowe z OpenWeatherMap API
-WEATHER_DATA=$(curl -s "https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&exclude=${EXCLUDE}&appid=${API_KEY}&units=metric")
+}
 
-# Wyciągnij warunki pogodowe z odpowiedzi API
-WEATHER_CONDITION=$(echo $WEATHER_DATA | jq -r '.current.weather[0].main')
+temperatura(){
+    miasto
+    # Pobierz dane pogodowe z OpenWeatherMap API
+    WEATHER_DATA=$(curl -s "https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${API_KEY}")
+
+    temp=$(echo "$WEATHER_DATA" | jq -r '.current.temp')
+    temp=$(printf "%.0f" "$temp")
+    temp=$(($temp - 273))
+    echo "Temperatura to okolo $temp stopni Celsiusza"
+}
+
+info(){
+    miasto
+    # Pobierz dane pogodowe z OpenWeatherMap API
+    WEATHER_DATA=$(curl -s "https://api.openweathermap.org/data/3.0/onecall?lat=${LAT}&lon=${LON}&appid=${API_KEY}")
+
+    temp=$(echo "$WEATHER_DATA" | jq -r '.current.temp')
+    temp=$(printf "%.0f" "$temp")
+    temp=$(($temp - 273))
+
+    cisnienie=$(echo "$WEATHER_DATA" | jq -r '.current.pressure')
+
+    pogoda=$(echo "$WEATHER_DATA" | jq -r '.current.weather[0].description')
+
+    echo "W $MIASTO jest $temp stopni celsjusza $cisnienie hPa oraz $pogoda"
+}
+
+noweMiasto(){
+    MIASTO=$OPTARG
+}
+
+MIASTO="GDANSK"
 
 
-# Wybierz odpowiednią tapetę na podstawie warunków pogodowych
-case $WEATHER_CONDITION in
-    Clear)
-        WALLPAPER="clear.jpg"
-        ;;
-    Clouds)
-        WALLPAPER="clouds.jpg"
-        ;;
-    Rain)
-        WALLPAPER="rain.jpg"
-        ;;
-    Snow)
-        WALLPAPER="snow.jpg"
-        ;;
-    Thunderstorm)
-        WALLPAPER="thunderstorm.jpg"
-        ;;
-    Mist | Fog | Haze | Smoke | Dust | Sand | Ash | Squall | Tornado)
-        WALLPAPER="mist.jpg"
-        ;;
-    *)
-        WALLPAPER="default.jpg" # Domyślna tapeta w przypadku nieznanych warunków
-        ;;
-esac
+while getopts hvpctm:i OPT; do
+    case $OPT in
+        h) pomoc;;
+        v) wersja;;
+        p) zmienTapete;;
+        c) cisnienie;;
+        t) temperatura;;
+        m) noweMiasto;;
+        i) info;;
+        *) echo "Nieznana Opcja";;
+    esac
+done
 
-# Zmień tapetę
-feh --bg-scale "${WALLPAPER_DIR}/${WALLPAPER}"
-
-echo "Tapeta zmieniona na podstawie warunków pogodowych: ${WEATHER_CONDITION}"
+# Sprawdź, czy żadna opcja nie została podana
+if [ $OPTIND -eq 1 ]; then
+    zmienTapete
+fi
