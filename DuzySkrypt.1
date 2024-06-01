@@ -1,0 +1,53 @@
+.TH DuzySkrypt 1 "Czerwiec 2024" "Wersja 1.3" "User Commands"
+
+.SH NAME
+DuzySkrypt - zmiana tapety na podstawie pogody i inne rzeczy powiązane z API OPENWHEATER.
+
+.SH SYNOPSIS
+.B DuzySkrypt
+
+.TP
+.B DuzySkrypt [\fIOPCJE\fR]
+
+.SH DESCRIPTION
+Podczas domyślnego włączenia skryptu zamienia on tapetę na podstawie pogody. Skrypt zaweira również 
+.I kilka innych zadań 
+takich jak sprawdzanie danych pogodowych. Domyślne miasto to
+.B Gdańsk.
+
+.SH OPTIONS
+.TP
+-h          Wyświetla pomoc.
+
+.TP
+-v          Wyświetla wersje skryptu.
+
+.TP
+-p          Zmienia tapete na podstawie aktualnej pogody w danym mieście.
+
+.TP
+-c          Sprawdza ciśnienie w danym mieście.
+
+.TP
+-t          Sprawdza temperature w danym mieście.
+
+.TP
+-m [\fIMIASTO\fR] Ustawia nowe miasto (GDAŃSK, SOPOT, WARSZAWA)
+
+.TP
+-i          Wypisanie danych pogodowych w danym mieście.
+
+.SH EXAMPLES
+Przykłady użycia:
+.TP
+DuzySkrypt -m SOPOT -i
+
+.SH AUTHOR
+Jakub Pastuszka 198339 
+
+.SH LICENSE
+.TP
+Program opiera się na API ze strony OPENWHEATER.org, który na mocy licencji CC BY-SA 4.0.
+
+.TP
+API OPENWHEATER pobiera tylko dane pogodowe, a program DuzySkrypt operójne na pobranych danych w różne sposoby.
